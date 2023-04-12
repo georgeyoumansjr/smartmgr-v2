@@ -1,0 +1,11 @@
+---
+deployment:
+ tasks:
+ - export DEPLOYPATH=/home/tnhlabsc/smartmgr.com/
+ - /bin/cp -R ims_django $DEPLOYPATH
+ - /bin/cp -R imsApp $DEPLOYPATH
+ - /bin/cp -R media $DEPLOYPATH
+ - /bin/cp -R static $DEPLOYPATH
+ - /bin/cp manage.py $DEPLOYPATH
+ - /bin/cp requirements.txt $DEPLOYPATH
+ - /bin/cp warning.log $DEPLOYPATH

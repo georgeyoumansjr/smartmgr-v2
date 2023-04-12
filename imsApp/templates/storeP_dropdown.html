@@ -1,0 +1,8 @@
+<option value="" selected="selected" disabled="disabled"></option>
+{% for product in store_products %}
+    {% if product.stock > 0 %}
+        <option value="{{ product.pk }}">{{ product }}</option>
+    {% else %}
+        <option disabled="true" value="{{ product.pk }}">{{ product }} Stock Unavailable</option>
+    {% endif %}
+{% endfor %}

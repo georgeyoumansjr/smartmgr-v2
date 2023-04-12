@@ -1,0 +1,207 @@
+{% load static %}
+{% load notifications_tags %}
+<header>
+    <!-- Intro settings -->
+    <style>
+        #intro {
+            /* Margin to fix overlapping fixed navbar */
+            margin-top: 58px;
+        }
+        .dropdown {
+        position: relative;
+        display: inline-block;
+        }
+
+        .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #faf8f8;
+        min-width: 200px;
+        height: 350px;
+        overflow-y: scroll ;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        padding: 12px 16px;
+        z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+        display: block;
+        }
+
+        .badge-n{
+            display: block;
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            color:red;
+        }
+        
+
+        @media (max-width: 991px) {
+            #intro {
+                /* Margin to fix overlapping fixed navbar */
+                margin-top: 45px;
+            }
+        }
+    </style>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow border-bottom">
+        <div class="container">
+            <!-- Navbar brand -->
+            <a class="navbar-brand" target="_blank" href="{% url 'home-page' %}">
+                <img src="{{ MEDIA_URL }}/default/smartInv.jpg" height="16" alt="{{ MEDIA_URL }}" loading="lazy" style="margin-top: -3px;" />
+            </a>
+            <button class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarExample01" aria-controls="navbarExample01" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarExample01">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="topNav">
+                    {% if user.id and user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'home-page' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'category-page' %}">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'product-page' %}">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'store-page' %}">Store</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'inventory-page' %}">Inventory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'sales-page' %}">Sales</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'invoice-page' %}">Invoices</a>
+                    </li>
+                    {% elif unassigned %}
+                    <li class="home">
+                        <a class="nav-link" aria-current="page" href="{% url 'home-page' %}">Home</a>
+                    </li>
+                    {% elif user.id and not user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'store-detail-i' %}">Store</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'inventory-page' %}">Inventory</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'sales-page' %}">Sales</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'invoice-own' %}">Invoices</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <ul class="navbar-nav d-flex flex-row">
+                    {% if user.id %} {% if user.profile.user_type == 1 %} {% endif %}
+                    <li class="nav-item me-3 me-lg-0">
+                        <div class="nav-link">
+                            <div class="dropdown">
+                                <span>
+                                    <a href="{% url 'my-notification' %}" style="color:darkgrey"><i class="fa fa-bell" style="font-size:20px"></i></a>
+                                    {% if user.notifications.unread.exists %}
+                                        <span class="badge-n fw-bolder">{% live_notify_badge %}</span>
+                                    {% endif %}
+                                </span>
+                                <div class="dropdown-content">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-lg-8 col-md-8">
+                                                <b>Notifications</b>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3">
+                                                <a href="{% url 'mark_all_notifications_as_read' %}"
+                                                
+                                                    class="p-1 border border-dark rounded text-dark" 
+                                                    data-toggle="tooltip" 
+                                                    data-placement="top" 
+                                                    title="Mark all as read"
+                                                >
+                                                    <i class="fas fa-check-double"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    {% if user.notifications.unread.exists %}
+                                        {% for notification in  user.notifications.unread %}
+                                            <div class="container" style="height: 60px;px;width:200px">
+                                                <small class="text-trucate" style="height:25px;font-size:13px;"><b >{{ notification.verb }}</b></small>
+                                                
+                                                <p class="fw-normal" style="height:35px;font-size:13px;overflow:hidden;text-overflow: ellipsis;">{{ notification.description }}</p>
+                                                
+                                            </div>    
+                                            <div class="dropdown-divider"></div>
+                                        {% endfor %}
+                                    {% else %}
+                                    <div class="container" style="height:80px;width:200px">
+                                        <b class="text-muted" style="font-size: 13px;">No New Notifications</b>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </li>
+                    <li class="nav-item me-3 me-lg-0">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <span class="me-1"><img src="{{ MEDIA_URL }}/default/default-avatar.png" alt="User Avatar" id="user-avatar" class="img-thumbnail rounded-circle"></span>Howdy, {{ user.first_name }} {{user.last_name}}
+                        </a>
+                        <!-- <a class="nav-link" href="{% url 'logout' %}">Logout</a> -->
+                    </li>
+                    <li class="nav-item me-3 me-lg-0">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    {% live_notify_list list_class="dropdown-content" %}
+                    {% else %}
+                    <li class="nav-item me-3 me-lg-0">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item me-3 me-lg-0">
+                        <a class="nav-link" href="{% url 'register-user' %}">Signup</a>
+                    </li> 
+                    {% endif %}
+                    <!-- Icons -->
+                    <!-- <li class="nav-item me-3 me-lg-0">
+                        <a class="nav-link" href="https://www.youtube.com/channel/UC5CF7mLQZhvx8O5GODZAhdA" rel="nofollow" target="_blank">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </li> -->
+                    <!-- Icons -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar -->
+
+    <!-- Jumbotron -->
+    <div id="intro" class="pt-2 text-center bg-light">
+        <!-- <h1 class="mb-3 h2">Learn Bootstrap 5 with MDB</h1>
+        <p class="mb-3">Best & free guide of responsive web design</p>
+        <a class="btn btn-primary m-2" href="https://www.youtube.com/watch?v=c9B4TPnak1A" role="button" rel="nofollow" target="_blank">Start tutorial</a>
+        <a class="btn btn-primary m-2" href="https://mdbootstrap.com/docs/standard/" target="_blank" role="button">Download MDB UI KIT</a> -->
+    </div>
+    <!-- Jumbotron -->
+</header>
+<script>
+    $(function() {
+        $('#topNav .nav-link').each(function() {
+            var current = '{{ request.get_full_path | urlencode }}'
+            if (current == $(this).attr('href')) {
+                $(this).parent().addClass('active')
+            }
+        })
+
+        
+
+    })
+
+</script>

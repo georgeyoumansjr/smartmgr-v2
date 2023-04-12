@@ -1,0 +1,192 @@
+{% extends 'base.html' %} {% load humanize %} {% block pageContent %}
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="card card-default rounded-0 shadow ">
+        <div class="card-header">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+               <div>
+                   <h4 class="card-title fw-bold">{{ store.name }} Store</h4>
+                   <p class="text-muted font-weight-bold"><span class="font-weight-normal">Owned By:</span> {{ store.owner }}</p>
+                   <div class="mt-1">
+                       <h6 class="font-weight-bold">Address: {{ store.address }}</h5>
+                   </div>
+                   <span class="badge bg-secondary">{{ store.category }}</span>
+               </div>
+               {% if request.user.is_superuser %}
+                <div>
+                    <a class="btn btn-primary rounded-0 bg-gradient btn-sm" id='add_new'>Add Products to store</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="container-fluid">
+                <table class="table table-bordered" id="product-list">
+                    <colgroup>
+                        {% if request.user.is_superuser %}
+                        <col width="5%">
+                        <col width="20%">
+                        <col width="25%">
+                        <col width="15%">
+                        <col width="10%">
+                        <col width="25%">
+                        {% else %}
+                        <col width="5%">
+                        <col width="20%">
+                        <col width="30%">
+                        <col width="30%">
+                        <col width="15%">
+                        
+                        {% endif %}
+                    </colgroup>
+                    <thead>
+                        <tr class="bg-gradient bg-primary bg-opacity-50 text-light">
+                            {% if request.user.is_superuser %}
+                            <th class="px-1 py-2 text-center">#</th>
+                            <th class="px-2 py-2 text-center">Image</th>
+                            <th class="px-2 py-2 text-center">Product</th>
+                            <th class="px-1 py-2 text-center">Available Stock</th>
+                            <th class="px-1 py-2 text-center">Price</th>
+                            <th class="px-2 py-2 text-center">Action</th>
+                            {% else %}
+                            <th class="px-1 py-2 text-center">#</th>
+                            <th class="px-2 py-2 text-center">Image</th>
+                            <th class="px-2 py-2 text-center">Product</th>
+                            <th class="px-2 py-2 text-center">Available Stock</th>
+                            <th class="px-2 py-2 text-center">Price</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in store_products %}
+                        <tr>
+                            {% if request.user.is_superuser %}
+                            <td class="px-1 py-1 align-middle text-center">{{ forloop.counter }}</td>
+                            <td class="px-2 py-1 align-middle">
+                                
+                                <img width="200" height="200" class="img img-thumbnail img-fluid view-js" src="{{ product.product.image.url }}" alt="{{ product }}">
+                            </td>
+                            <td class="px-2 py-1 align-middle">{{ product }}</td>
+                            <td class="px-1 py-1 align-middle text-end">{{ product.stock }}</td>
+                            <td class="px-1 py-1 align-middle text-end">{{ product.price }}</td>
+                            <td class="px-2 py-1 align-middle text-center">
+                                <a class="btn btn-outline-primary btn-sm edit-data" href="javascript:void(0)" data-id="{{ product.pk }}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <button class="btn btn-outline-danger btn-sm delete-data" type="button" data-id="{{ product.pk }}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                            {% else %}
+                            <td class="px-1 py-1 align-middle text-center">{{ forloop.counter }}</td>
+                            <td class="px-2 py-1 align-middle">
+                                <img width="200" height="200" class="img img-thumbnail img-fluid view-js" src="{{ product.product.image.url }}" alt="{{ product }}">
+                            </td>
+                            <td class="px-2 py-1 align-middle">{{ product }}</td>
+                            <td class="px-1 py-1 align-middle text-end">{{ product.stock }}</td>
+                            <td class="px-1 py-1 align-middle text-end">{{ product.price }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock pageContent %} {% block ScriptBlock %}
+<script>
+    var elements = document.getElementsByClassName("view-js");
+
+    var myFunction = function() {
+        const viewer = new Viewer(this, {
+        toolbar: {
+            zoomIn: 4,
+            zoomOut: 4,
+            oneToOne: 4,
+            reset: 4,
+            prev: 4,
+            play: {
+            show: 4,
+            size: 'large',
+            },
+            next: 4,
+            rotateLeft: 4,
+            rotateRight: 4,
+            flipHorizontal: 4,
+            flipVertical: 4,
+        },
+    });
+    };
+
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].addEventListener('click', myFunction, false);
+    }
+
+    
+</script>
+<script>
+    {% if request.user.is_superuser %}
+    $(function() {
+        $('#add_new').click(function() {
+            uni_modal('<i class="fa fa-plus"></i> Add Store', '{% url "manage-store-p" pk=store.id %}', 'modal-md')
+        })
+        $('.edit-data').click(function() {
+            var url = '{% url "manage-store-p-pid" pk=store.id pid=123 %}'.replace("123",$(this).attr('data-id'));
+            uni_modal('<i class="fa fa-edit"></i> Edit Store', url, 'modal-md')
+        })
+        $('.delete-data').click(function() {
+            _conf("Are you sure to delete this Product permanently?", "delete_store_p", [$(this).attr('data-id')])
+        })
+        $('#product-list').DataTable({
+            columnDefs: [{
+                orderable: false,
+                targets: 5
+            }],
+            initComplete: function(settings, json) {
+                $('table td, table th').addClass('px-2 py-1')
+            },
+            drawCallback: function(settings) {
+                $('table td, table th').addClass('px-2 py-1')
+            }
+        })
+    })
+    function delete_store_p($id) {
+        start_loader();
+        var _this = $(this)
+        $('.err-msg').remove();
+        var el = $('<div>')
+        el.addClass("alert alert-danger err-msg")
+        el.hide()
+        $.ajax({
+            url: '{% url "store-delete-p" %}',
+            headers: {
+                'X-CSRFToken': "{{csrf_token}}"
+            },
+            method: 'POST',
+            data: {
+                id: $id
+            },
+            dataType: 'json',
+            error: err => {
+                console.log(err)
+                el.text('An error occurred.')
+                el.show('slow')
+                end_loader()
+            },
+            success: function(resp) {
+                if (resp.status == 'success') {
+                    location.reload()
+                } else if (!!resp.msg) {
+                    el.text('An error occurred.')
+                    el.show('slow')
+                } else {
+                    el.text('An error occurred.')
+                    el.show('slow')
+                }
+                end_loader()
+            }
+        })
+    }
+    {% endif %}
+</script>
+{% endblock ScriptBlock %}

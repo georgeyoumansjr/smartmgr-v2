@@ -1,0 +1,85 @@
+{% load customfilter %}
+<div class="container-fluid">
+    <form action=" " id="store-form">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ store.id }}">
+        <div class="form-group mb-3 ">
+            <label for="name" class="control-label">store Name</label>
+            <input type="text" class="form-control rounded-0" id="name" name="name" value="{{ store.name }}" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="address" class="control-label">Address</label>
+            <input class="form-control rounded-0" name="address" id="address" rows="5" value="{{ store.address }}" required></input>
+        </div>
+        <div class="form-group mb-3 ">
+            <label for="category" class="control-label">Category</label>
+            <select name="category" id="category" class="form-select rounded-0">
+                <option value="" selected="selected" disabled="disabled"></option>
+                {% for choice in category %}
+                    <option value="{{ choice.id }}">{{ choice.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group mb-3 ">
+            <label for="owner" class="control-label">Owner</label>
+            <select name="owner" id="owner" class="form-select rounded-0">
+                <option value="" selected="selected" disabled="disabled"></option>
+                {% for choice in users %}
+                    {% if choice.id == store.owner.id  %}
+                        <option value="{{ choice.id }}" selected>{{ choice.username }}  {{ choice.firstname }} {{ choice.lastname }}</option>
+                    {% else %}
+                        <option value="{{ choice.id }}" >{{ choice.username }}  {{ choice.firstname }} {{ choice.lastname }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+<script>
+    $(function() {
+        $('#store-form').submit(function(e) {
+            e.preventDefault();
+            var _this = $(this)
+            $('.err-msg').remove();
+            var el = $('<div>')
+            el.addClass("alert alert-danger err-msg")
+            el.hide()
+            if (_this[0].checkValidity() == false) {
+                _this[0].reportValidity();
+                return false;
+            }
+            start_loader();
+            $.ajax({
+                url: "{% url 'save-store' %}",
+                data: new FormData($(this)[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                dataType: 'json',
+                error: err => {
+                    console.log(err)
+                    alert("An error occured ", 'error');
+                    end_loader();
+                },
+                success: function(resp) {
+                    if (typeof resp == 'object' && resp.status == 'success') {
+                        el.removeClass("alert alert-danger err-msg ")
+                        location.reload()
+                    } else if (resp.status == 'failed' && !!resp.msg) {
+                        el.html(resp.msg)
+                    } else {
+                        el.text("An error occured ", 'error');
+                        end_loader();
+                        console.err(resp)
+                    }
+                    _this.prepend(el)
+                    el.show('slow')
+                    $("html, body, .modal ").scrollTop(0);
+                    end_loader()
+                }
+            })
+        })
+    })
+</script>
