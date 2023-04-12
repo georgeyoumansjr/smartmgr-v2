@@ -2,10 +2,15 @@
 
 <!--Section: Content-->
 <section class="">
-
+    
     <div class="row d-flex justify-content-center">
         <div class=" mt-3 col-lg-6 col-md-6 col-sm-12 col-xs-12">
             <h3 class="h3 text-center text-muted">You're Not A part of Any Store</h3>
+            <div class="mt-3 d-flex justify-content-center">
+                <div class="tools">
+                    <button type="button" class="btn btn-primary rounded-0 bg-gradient btn-sm" id='add_new'><i class="fa fa-plus"></i>Add New Store</button>
+                </div>
+            </div>
             <div class="mt-1">
                 <img class="img img-fluid" src="{% static 'notFound.png' %}" alt="Store Not found">
             </div>
@@ -14,4 +19,15 @@
 </section>
 
 
-</div> {% endblock pageContent %} 
+</div> {% endblock pageContent %} {% block ScriptBlock %}
+
+<script>
+     $(function() {
+        $('#add_new').click(function() {
+                uni_modal('<i class="fa fa-plus"></i> Add Store', '{% url "manage-store" %}', 'modal-md')
+            })
+     });
+</script>
+
+
+{% endblock ScriptBlock %}

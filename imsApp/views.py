@@ -180,7 +180,7 @@ def category_mgt(request):
 
     return render(request, 'category_mgt.html', context)
 
-@admin_only
+
 @login_required
 def store_mgt(request):
     context['page_title'] = "Store"
@@ -286,12 +286,15 @@ def manage_category(request, pk=None):
 
 
 
-@admin_only
+
 @login_required
 def manage_store(request, pk=None):
     context['page_title'] = "Manage store"
     context['category'] = Category.objects.all()
-    context['users'] = User.objects.filter(is_superuser=0)
+    if request.user.is_superuser:
+        context['users'] = User.objects.filter(is_superuser=0)
+    else:
+        context['users'] = User.objects.filter(id=request.user.pk)
     if not pk is None:
         store = Store.objects.get(id = pk)
         context['store'] = store
